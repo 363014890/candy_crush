@@ -1,0 +1,397 @@
+<!--
+CandyCrush
+Your Name: Lawford Liu
+Collaborators: discussed the assignment with nobody
+-->
+<!DOCTYPE html>
+<html>
+<!--
+/* Copyright (c) 2017 MIT 6.813/6.831 course staff, all rights reserved.
+ * Redistribution of original or derived work requires permission of course staff.
+ */
+-->
+
+<head>
+<meta charset="utf-8">
+<title>CandyCrush</title>
+
+<!-- Load style sheets -->
+<link rel="stylesheet" href=
+  "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css">
+
+<link rel="stylesheet" href="mainLayout.css">
+
+<!-- Use mobile-aware viewport -->
+<meta name="viewport" content=
+  "width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Load any supplemental Javascript libraries here -->
+<script src=
+  "https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src=
+  "https://cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.2/seedrandom.js">
+</script>
+<script src="candy.js"></script>
+<script src="board.js"></script>
+<script src="rules.js"></script>
+
+<script>
+function make_table(){
+  var tableElem, rowElem, colElem,num,candy;
+  var alpha = ['a','b','c','d','e','f','g','h'];
+  document.getElementById("mtable").innerHTML = "";
+  tableElem = document.getElementById('mtable');
+
+  for (var i = 0; i < 8; i++) {
+      rowElem = document.createElement('tr');
+      
+      for (var j = 0; j < 8; j++) {
+
+          colElem = document.createElement('td');
+          colElem.innerHTML = alpha[j]+(i+1).toString();
+          colElem.style.textAlign = "center";
+          colElem.style.fontWeight = "bold";
+          colElem.id = 8*i + j;
+          rowElem.appendChild(colElem);
+      }
+      tableElem.appendChild(rowElem);
+  }
+  /* document.body.appendChild(tableElem);*/
+  document.getElementById("mainColumn").appendChild(tableElem);
+//end make table
+}
+
+// By default, the first board loaded by your page will be the same 
+// each time you load (which is accomplished by "seeding" the random
+// number generator. This makes testing (and grading!) easier!
+Math.seedrandom(0);
+
+
+// A short jQuery extension to read query parameters from the URL.
+$.extend({
+  getUrlVars: function() {
+    var vars = [], pair;
+    var pairs = window.location.search.substr(1).split('&');
+    for (var i = 0; i < pairs.length; i++) {
+      pair = pairs[i].split('=');
+      vars.push(pair[0]);
+      vars[pair[0]] = pair[1] &&
+          decodeURIComponent(pair[1].replace(/\+/g, ' '));
+    }
+    return vars;
+  },
+  getUrlVar: function(name) {
+    return $.getUrlVars()[name];
+  }
+});
+
+// constants
+var DEFAULT_BOARD_SIZE = 8;
+
+// data model at global scope for easier debugging
+var board;
+var rules;
+
+// initialize board
+if ($.getUrlVar('size') && $.getUrlVar('size') >= 3) {
+  board = new Board($.getUrlVar('size'));
+} else {
+  board = new Board(DEFAULT_BOARD_SIZE);
+}
+// load a rule
+rules = new Rules(board);
+
+// Final initialization entry point: the Javascript code inside this block
+// runs at the end of start-up when the page has finished loading.
+$(document).ready(function()
+{
+  // Your code here.
+  make_table();
+  rules.prepareNewGame();
+  disable_btn();
+  document.getElementById('newgame').style.backgroundColor = "pink";
+});
+
+
+/* Event Handlers */
+// access the candy object with info.candy
+
+// add a candy to the board
+$(board).on('add', function(e, info)
+{
+  // Your code here.
+  var candy = info.candy;
+  var location = board.getLocationOf(candy);
+  var _id = location.row*8 +location.col;
+  _id = _id.toString();
+  var color = candy.color.toString();
+  document.getElementById(_id).style.background = color;
+});
+
+// move a candy on the board
+$(board).on('move', function(e, info)
+{
+  // Your code here.
+  var candy = info.candy;
+  var toRow = info.toRow;
+  var toCol = info.toCol;
+  var color = candy.color;
+  var id = (8*toRow + toCol).toString();
+  document.getElementById(id).style.background = color;
+});
+
+// remove a candy from the board
+$(board).on('remove', function(e, info)
+{
+  // Your code here.
+  var candy = info.candy;
+  var location = board.getLocationOf(candy);
+  var _id = info.fromRow*8 +info.fromCol;
+    document.getElementById(_id).style.backgroundColor = "white";
+  
+});
+
+// move a candy on the board
+$(board).on('scoreUpdate', function(e, info)
+{
+  // Your code here. To be implemented in pset 2.
+});
+
+// Button Events
+$(document).on('click', "#newgame", function(evt)
+{
+  // Your code here.
+  board.clear();
+  rules.prepareNewGame();
+  after_click()
+});
+
+function after_click(){
+  document.getElementById('move').focus();
+  document.getElementById('move').value = "";
+  
+}
+
+function disable_input(){
+  document.getElementById('move').disabled = true;
+}
+
+function disable_btn(){
+  document.getElementById("up").style.backgroundColor = "grey";
+  document.getElementById("down").style.backgroundColor = "grey";
+  document.getElementById("left").style.backgroundColor = "grey";
+  document.getElementById("right").style.backgroundColor = "grey";
+  document.getElementById("crushonce").style.backgroundColor = "grey";
+  document.getElementById('up').disabled = true;
+  document.getElementById('down').disabled = true;
+  document.getElementById('left').disabled = true;
+  document.getElementById('right').disabled = true;
+  document.getElementById('crushonce').disabled = true;
+  
+}
+
+
+$(document).on('click', "#up", function(evt)
+{
+  // Your code here.
+  var move = document.getElementById("move").value;
+  var alpha = ['a','b','c','d','e','f','g','h'];
+  var row = move[1]-1;
+  var col = alpha.indexOf(move[0]);
+  var _candy = board.getCandyAt(row,col);
+  
+  if (rules.isMoveTypeValid(_candy,'up')){
+    var nextcandy = board.getCandyAt(row-1,col);
+    board.flipCandies(_candy,nextcandy);
+  }
+  after_click();
+  disable_btn();
+  document.getElementById('crushonce').disabled = false;
+  document.getElementById('crushonce').style.backgroundColor = "pink";
+});
+
+$(document).on('click', "#down", function(evt)
+{
+  // Your code here.
+  var move = document.getElementById("move").value;
+  var alpha = ['a','b','c','d','e','f','g','h'];
+  var row = move[1]-1;
+  var col = alpha.indexOf(move[0]);
+  var _candy = board.getCandyAt(row,col);
+  
+  if (rules.isMoveTypeValid(_candy,'down')){
+    var nextcandy = board.getCandyAt(row+1,col);
+    board.flipCandies(_candy,nextcandy);
+  }
+  after_click()
+  disable_btn();
+  document.getElementById('crushonce').disabled = false;
+  document.getElementById('crushnoce').style.backgroundColor = "pink";
+});
+
+$(document).on('click', "#left", function(evt)
+{
+  // Your code here.
+  var move = document.getElementById("move").value;
+  var alpha = ['a','b','c','d','e','f','g','h'];
+  var row = move[1]-1;
+  var col = alpha.indexOf(move[0]);
+  var _candy = board.getCandyAt(row,col);
+  
+  if (rules.isMoveTypeValid(_candy,'left')){
+    var nextcandy = board.getCandyAt(row,col-1);
+    board.flipCandies(_candy,nextcandy);
+  }
+  after_click()
+  disable_btn();
+  document.getElementById('crushonce').disabled = false;
+  document.getElementById('crushonce').style.backgroundColor = "pink";
+});
+
+$(document).on('click', "#right", function(evt)
+{
+  // Your code here.
+  var move = document.getElementById("move").value;
+  var alpha = ['a','b','c','d','e','f','g','h'];
+  var row = move[1]-1;
+  var col = alpha.indexOf(move[0]);
+  var _candy = board.getCandyAt(row,col);
+  
+  if (rules.isMoveTypeValid(_candy,'right')){
+    var nextcandy = board.getCandyAt(row,col+1);
+    board.flipCandies(_candy,nextcandy);
+  }
+  after_click()
+  disable_btn();
+  document.getElementById('crushonce').disabled = false;
+  document.getElementById('crushonce').style.backgroundColor = "pink";
+});
+
+$(document).on('click', "#crushonce", function(evt)
+{
+  // Your code here.
+  
+  var crushable = rules.getCandyCrushes();
+  rules.removeCrushes(crushable);
+  setTimeout(function() {
+    rules.moveCandiesDown();
+    var newcrushable = rules.getCandyCrushes();
+    if(newcrushable.length > 0){
+
+    }
+    else{
+      after_click();
+      disable_btn();
+    }
+  }, 500);
+  
+  
+  
+});
+
+// keyboard events arrive here
+$(document).on('keyup', function(evt) {
+  // Your code here.
+  var move = document.getElementById('move').value;
+  var alpha = ['a','b','c','d','e','f','g','h'];
+  if (alpha.includes(move[0]) && 0 <= move[1] < 8 && move.length == 2){
+      var row = move[1]-1;
+      var col = alpha.indexOf(move[0]);
+      var _candy = board.getCandyAt(row,col);
+    if (rules.isMoveTypeValid(_candy,'up')){      
+      document.getElementById("up").disabled = false;
+      document.getElementById("up").style.backgroundColor = 'green';
+      
+    }
+    if (rules.isMoveTypeValid(_candy,'down')){      
+      document.getElementById("down").disabled = false;
+      document.getElementById("down").style.backgroundColor = 'green';
+
+    }
+    if (rules.isMoveTypeValid(_candy,'left')){      
+      document.getElementById("left").disabled = false;
+      document.getElementById("left").style.backgroundColor = 'green';
+
+    }
+    if (rules.isMoveTypeValid(_candy,'right')){      
+      document.getElementById("right").disabled = false;
+      document.getElementById("right").style.backgroundColor = 'green';
+
+    }
+  }
+  else{
+    disable_btn();
+  }
+});
+
+
+
+
+</script>
+
+
+</head>
+
+<body>
+
+<div class="container">
+  <div class="row" id="row">
+    <div class="col-md-4" id="firstColumn">
+      <div id="colonetext">
+      <!-- Column 1 Code Here -->
+      Candy crush
+      </div>
+      <button class="btn" id="newgame">
+        new game
+      </button>
+      <!-- <button onclick="location.href='https://blog.csdn.net/nvzizhou/article/details/51179788'" type="button"> -->
+        <!-- hello</button> -->
+      <!-- <button> -->
+      <!-- <span style="white-space:pre">	</span><iframe src="https://blog.csdn.net/nvzizhou/article/details/51179788" width="100%" height="770px" frameborder="0" > -->
+			
+      <!-- </iframe> -->
+      <!-- </button> -->
+    </div>
+
+    <div class="col-md-4" id="mainColumn">
+
+      <!-- Column 2 Code Here -->
+      <table id="mtable">
+        <tr></tr>
+      </table>
+
+    </div>
+
+    <div class="col-md-4" id="lastColumn">
+      <!-- Column 3 Code Here -->
+      Move
+      <input type="text" id="move">
+      <div class="col" id="upbtn">
+        <button calss="btn" id="up">
+          ↑
+        </button>
+      </div>
+      <div class="col" id="lrbtn">
+        <button calss="btn" id="left">
+          ←
+        </button>
+        <button calss="btn" id="right">
+          →
+        </button>
+      </div>
+      <div class="col" id="downbtn">
+        <button calss="btn" id="down">
+          ↓
+        </button>
+      </div>
+      <button class="btn" id="crushonce">
+        crush once
+      </button>
+    </div>
+
+  </div> <!-- class="row" -->
+</div> <!-- class="container" -->
+
+</body>
+
+</html>

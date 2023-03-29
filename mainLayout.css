@@ -1,0 +1,58 @@
+/* Copyright (c) 2017 MIT 6.813/6.831 course staff, all rights reserved.
+ * Redistribution of original or derived work requires permission of course staff.
+ */
+
+/* REMOVE ME - dashed lines and height for debugging */
+/* .row{
+  column-gap: 10px;
+} */
+
+#mainColumn {
+  /* outline: 1px dashed orange;
+  height: 200px; */
+  padding: 10px;
+}
+
+#firstColumn{
+  padding: 10px;
+}
+#lastColumn{
+  padding: 10px;
+}
+#colonetext{
+  color: red;
+  font-weight: bold;
+}
+
+#upbtn{
+  padding: 5px;
+  margin: 20px;
+  /* background-color: grey; */
+}
+#lrbtn{
+  padding: 5px;
+  /* background-color: grey; */
+}
+#downbtn{
+  padding: 5px;
+  margin: 20px;
+  /* background-color: grey; */
+}
+.btn{
+  background-color: grey;
+}
+table{
+  /* border: 1px solid white; */
+  padding: 10px;
+  border-collapse: collapse;
+  column-width: 40px;
+  width: 320px;
+  height: 320px;
+}
+td{
+  border: solid white;
+  padding: 1px;
+  background-color: red;
+  border-collapse: collapse;
+}
+/* Your css code here! */
